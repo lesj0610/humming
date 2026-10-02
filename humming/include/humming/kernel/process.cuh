@@ -276,7 +276,6 @@ __global__ void weight_repack_nk(
 
   uint32_t out_stride = (256 / kNumBitsA) * padded_shape_n * kNumBitsB / 32;
   uint32_t col_offset = (256 / kNumBitsA) * (64 * blockIdx.x) * kNumBitsB / 32;
-  uint32_t global_max_row = gridDim.z * padded_shape_k / (256 / kNumBitsA);
 
   constexpr uint32_t num_output_rows = kNumBitsA / 4;
   constexpr uint32_t num_ints_per_row = 16 * kNumBitsB / kNumBitsA;
@@ -309,7 +308,7 @@ __global__ void weight_repack_nk(
   PRAGMA_UNROLL
   for (uint32_t i = 0; i < num_output_rows; i++) {
     uint32_t row = (blockIdx.y * 64 + blockIdx.z * padded_shape_k) / (256 / kNumBitsA) + i;
-    if (row >= global_max_row) continue;
+    if (blockIdx.y * 64 + i * (256 / kNumBitsA) >= padded_shape_k) continue;
 
     PRAGMA_UNROLL
     for (uint32_t j = 0; j < num_ints_per_row / kNumBitsB; j++) {
