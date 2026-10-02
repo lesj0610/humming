@@ -307,9 +307,8 @@ __global__ void weight_repack_nk(
 
   PRAGMA_UNROLL
   for (uint32_t i = 0; i < num_output_rows; i++) {
-    // A partial last K tile must not write past its own expert into the next one.
-    if (blockIdx.y * 64 + i * (256 / kNumBitsA) >= padded_shape_k) continue;
     uint32_t row = (blockIdx.y * 64 + blockIdx.z * padded_shape_k) / (256 / kNumBitsA) + i;
+    if (blockIdx.y * 64 + i * (256 / kNumBitsA) >= padded_shape_k) continue;
 
     PRAGMA_UNROLL
     for (uint32_t j = 0; j < num_ints_per_row / kNumBitsB; j++) {
